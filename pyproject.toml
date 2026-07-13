@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tuch-vision"
+version = "0.1.0"
+description = "Manuscript vision/OCR + PhiCS health + optional spectral Φ (local-first book agents)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Walter Calmels" }]
+dependencies = [
+    "Pillow>=11.1.0",
+    "python-docx>=1.1.0",
+    "numpy>=1.24.0",
+    "typer>=0.15.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+ocr = ["rapidocr-onnxruntime>=1.3.24"]
+dev = ["pytest>=8.0"]
+all = ["tuch-vision[ocr]"]
+
+[project.scripts]
+tuch-vision = "tuch_vision.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/wcalmels/tuch-vision"
+Related-Sentinel = "https://github.com/wcalmels/sentinel-edge"
+Related-Phi = "https://github.com/wcalmels/tuch-phi-bridge"
+
+[tool.setuptools.packages.find]
+include = ["tuch_vision*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
