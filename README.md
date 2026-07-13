@@ -1,30 +1,19 @@
 # tuch-vision
 
-Local-first **manuscript vision + PhiCS health + optional spectral Φ**.
+**Manuscript agents** for *any* book or long-form document: vision/OCR of figures, screenshot QA, and PhiCS health on chapter progress.
 
-Extracted from the Book Agent line (figures/screens/health) into a public package so it stands next to `sentinel-edge` and `tuch-phi-bridge` — without shipping private drafts or Anthropic writers.
+A specific theory (e.g. TTH) is an optional **profile**, not the product.
 
-## Vocabulary
+## Idea
 
-| Tag | Meaning |
-|-----|---------|
-| OCR / vision checks | Figure & screenshot quality |
-| PhiCS fidelity | Local associative familiarity (`sentinel-edge`) |
-| `phi_spectral` | ConsciousAI-compatible matrix integration (`tuch-phi-bridge`) |
-| `Phi_TTH` | Book theory only — **never equated** here |
+| Layer | Job |
+|-------|-----|
+| Vision | Figures + captions in any DOCX / folder |
+| Screens | UI captures for companion apps / sites |
+| Health | Outline fill / approval / promises → local PhiCS |
+| Spectral (optional) | Integration of signal matrices (`phi_spectral`) |
 
-## Layout (Desktop siblings)
-
-```text
-Escritorio/
-  tuch-vision/        ← this repo
-  book_agent/         ← optional outline/drafts for `health`
-  sentinel-edge/      ← PhiCS
-  tuch-phi-bridge/    ← spectral Φ
-  consciousai/        ← optional preferred math
-```
-
-Overrides: `BOOK_AGENT_ROOT`, `TUCH_SENTINEL_ROOT`, `TUCH_PHI_BRIDGE_ROOT`, `CONSCIOUSAI_ROOT`.
+Writing (director/writer/critic) can live in Cursor or a private agent repo. This package is the **perception + health** slice you reuse across manuscripts.
 
 ## Install
 
@@ -33,25 +22,61 @@ pip install -e .
 pip install -e ".[ocr]"
 ```
 
+## Start a manuscript (generic)
+
+```bash
+tuch-vision init ./my-book --name "My Book"
+cd my-book
+# edit state/style_guide.md, state/constraints.md, drafts/
+tuch-vision health --project .
+tuch-vision figures --folder ./figures --project .
+tuch-vision screens ./screenshots --project .
+```
+
+Theory-specific OCR soft priors (example only):
+
+```bash
+tuch-vision init ./tth-draft --name "TTH" \
+  --hints-from ../tuch-vision/examples/profiles/tth/hints.json
+```
+
 ## CLI
 
 ```bash
-tuch-vision figures --docx book.docx
+tuch-vision init PATH --name "..."
+tuch-vision figures --docx book.docx [--project .]
 tuch-vision figures --folder ./figures --no-phics
-tuch-vision screens ./screenshots --no-ocr
-tuch-vision health --outline path/to/manuscript_outline.json
+tuch-vision screens ./screenshots [--project .]
+tuch-vision health [--project .] [--outline ...]
 ```
 
-## Library
+## Profile (`manuscript.toml`)
 
-```python
-from pathlib import Path
-from tuch_vision import run_vision_audit, run_screen_audit, run_manuscript_health
+```toml
+[project]
+name = "My Book"
+language = "en"
+
+[paths]
+outline = "state/manuscript_outline.json"
+drafts = "drafts"
+approved = "approved"
+figures = "figures"
+screenshots = "screenshots"
+
+[vision]
+ocr_hints = []   # optional domain numbers/tokens
 ```
 
-## What stays in `book_agent`
+## Vocabulary
 
-Writer/director/critic prompts, drafts, Anthropic automation, TTH build scripts. This repo is the **perception + health** slice.
+| Tag | Meaning |
+|-----|---------|
+| OCR / vision checks | Capture + caption hygiene |
+| PhiCS fidelity | Local familiarity vs baselines (`sentinel-edge`) |
+| `phi_spectral` | Matrix integration (`tuch-phi-bridge`) — not a science constant |
+
+Sibling overrides: `BOOK_AGENT_ROOT`, `TUCH_SENTINEL_ROOT`, `TUCH_PHI_BRIDGE_ROOT`, `CONSCIOUSAI_ROOT`.
 
 ## Tech report
 

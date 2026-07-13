@@ -39,7 +39,7 @@ def score_signal_matrix(
     *,
     row_ids: Optional[Sequence[str]] = None,
 ) -> Dict[str, object]:
-    """Score a (units x channels) matrix -> phi_spectral summary (not Phi_TTH)."""
+    """Score a (units x channels) matrix -> phi_spectral summary (not a theory Phi)."""
     if not _ensure():
         return {"ok": False, "error": "tuch-phi-bridge missing"}
     try:
@@ -63,7 +63,7 @@ def score_signal_matrix(
             "n_channels": int(matrix.shape[1]),
             "note": (
                 "phi_spectral = ConsciousAI-compatible integration of "
-                "document signals - not Phi_TTH / Phi_crit"
+                "document signals - not a monograph theory constant"
             ),
             "row_ids": list(row_ids) if row_ids else [],
         }

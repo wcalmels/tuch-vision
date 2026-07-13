@@ -1,30 +1,25 @@
 #!/usr/bin/env python3
-"""Structural + OCR consistency checks for figure units."""
+"""Structural + OCR consistency checks for figure units (manuscript-agnostic)."""
 
 from __future__ import annotations
 
 import re
-from typing import List
+from typing import Iterable, List, Optional, Set
 
 from .docx_figures import FigureUnit
 from .ocr import extract_numbers, number_matches, ocr_image
 
 
-# Numbers that often appear in TTH/AoE captions — soft prior for OCR alignment
-CANONICAL_HINTS = {
-    "1.599",
-    "0.4009",
-    "7.83",
-    "76",
-    "δ_F",
-    "Phi",
-    "Φ",
-}
-
-
-def run_checks(unit: FigureUnit, *, do_ocr: bool = True, ocr_backend: str = "auto") -> FigureUnit:
+def run_checks(
+    unit: FigureUnit,
+    *,
+    do_ocr: bool = True,
+    ocr_backend: str = "auto",
+    ocr_hints: Optional[Iterable[str]] = None,
+) -> FigureUnit:
     notes: List[str] = []
     status = "ok"
+    hints = {h.strip() for h in (ocr_hints or []) if h and str(h).strip()}
 
     if unit.kind == "conceptual":
         notes.append("conceptual caption (no embedded artwork expected)")
@@ -40,7 +35,6 @@ def run_checks(unit: FigureUnit, *, do_ocr: bool = True, ocr_backend: str = "aut
         unit.signals = {"presence": 0.0, "ocr_ok": 0.0, "align": 0.0, "quality": 0.0}
         return unit
 
-    # image unit
     if not unit.image_path or not unit.image_path.exists():
         notes.append("FAIL: missing image file")
         unit.status = "fail"
@@ -87,6 +81,20 @@ def run_checks(unit: FigureUnit, *, do_ocr: bool = True, ocr_backend: str = "aut
                 align = _caption_alignment(unit.caption, ocr.text, notes)
                 if align < 0.45:
                     status = "warn" if status != "fail" else status
+            if hints:
+                hint_hits = _hint_hits(hints, ocr.text, unit.caption or "")
+                if hint_hits:
+                    notes.append(f"profile OCR hint hits: {hint_hits}")
+                elif unit.caption:
+                    # Soft: hints listed in profile but none visible — warn only if caption also empty of them
+                    cap_l = (unit.caption or "").lower()
+                    expected = [h for h in hints if h.lower() in cap_l]
+                    if expected:
+                        notes.append(
+                            f"WARN: profile hints in caption not seen in OCR: {expected[:6]}"
+                        )
+                        status = "warn" if status != "fail" else status
+                        align = min(align, 0.5)
 
     quality = _clamp01((unit.luma_std / 40.0) * 0.6 + (min(unit.width_px, 1600) / 1600) * 0.4)
     presence = 1.0 if unit.caption else 0.55
@@ -105,10 +113,13 @@ def run_checks(unit: FigureUnit, *, do_ocr: bool = True, ocr_backend: str = "aut
     return unit
 
 
+def _hint_hits(hints: Set[str], ocr_text: str, caption: str) -> List[str]:
+    blob = f"{ocr_text}\n{caption}".lower()
+    return [h for h in sorted(hints) if h.lower() in blob][:8]
+
+
 def _caption_alignment(caption: str, ocr_text: str, notes: List[str]) -> float:
-    cap_nums = [n for n in extract_numbers(caption) if n >= 0.1]  # skip lonely zeros
-    # Drop obvious figure ids like 13.1 / 9.2 if they dominate — keep scientific values
-    # Heuristic: figure id is at start "Figure X.Y"
+    cap_nums = [n for n in extract_numbers(caption) if n >= 0.1]
     m = re.match(r"Figure\s+([0-9A]+)\.(\d+)", caption, re.I)
     id_num = None
     if m and m.group(1).isdigit():
@@ -127,7 +138,6 @@ def _caption_alignment(caption: str, ocr_text: str, notes: List[str]) -> float:
         else:
             score = 0.95 if matched else 0.7
 
-    # keyword overlap (axis labels, state names)
     tokens = _keywords(caption)
     ocr_l = ocr_text.lower()
     hits = [t for t in tokens if t.lower() in ocr_l]
@@ -143,7 +153,7 @@ def _keywords(caption: str) -> List[str]:
         "the", "a", "an", "of", "and", "with", "from", "into", "for", "to", "in",
         "on", "is", "are", "at", "by", "as", "or", "figure", "vs", "versus",
     }
-    words = re.findall(r"[A-Za-zΦδ_]{3,}", caption)
+    words = re.findall(r"[A-Za-z_]{3,}", caption)
     out = []
     for w in words:
         if w.lower() in stop:

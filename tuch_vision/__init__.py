@@ -1,6 +1,7 @@
-"""tuch-vision — manuscript vision + PhiCS health + optional spectral Φ."""
+"""tuch-vision — manuscript agents for any book."""
 
 from tuch_vision.health import HealthReport, run_manuscript_health
+from tuch_vision.profile import ManuscriptProfile, init_manuscript, load_profile
 from tuch_vision.vision import (
     FigureReport,
     ScreenReport,
@@ -17,6 +18,9 @@ __all__ = [
     "ScreenReport",
     "run_manuscript_health",
     "HealthReport",
+    "ManuscriptProfile",
+    "load_profile",
+    "init_manuscript",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

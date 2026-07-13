@@ -100,8 +100,8 @@ class FigureReport:
             "",
             "- FAIL → fix export / re-insert figure before submission.",
             "- WARN with missing caption numbers → check OCR misfires or wrong image under caption.",
-            "- Feed this report to Critic / Consistency / Cursor for prose-level review.",
-            "- `phi_spectral` ≠ Phi_TTH; it measures cohesion across figure quality channels.",
+            "- Feed this report to any editorial / Cursor critic for prose-level review.",
+            "- `phi_spectral` is an integration summary of quality channels — not a theory constant.",
             "",
         ]
         return "\n".join(lines)

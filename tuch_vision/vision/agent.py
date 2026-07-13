@@ -38,6 +38,7 @@ class VisionAgent:
     sentinel_root: Optional[Path] = None
     work_dir: Optional[Path] = None
     verbose: bool = True
+    ocr_hints: Optional[List[str]] = None
     units: List[FigureUnit] = field(default_factory=list)
     phics_notes: List[str] = field(default_factory=list)
 
@@ -70,7 +71,12 @@ class VisionAgent:
             print(f"  [{self.name}] Units: {len(self.units)}")
 
         for u in self.units:
-            run_checks(u, do_ocr=self.do_ocr, ocr_backend=self.ocr_backend)
+            run_checks(
+                u,
+                do_ocr=self.do_ocr,
+                ocr_backend=self.ocr_backend,
+                ocr_hints=self.ocr_hints,
+            )
             if self.verbose and u.kind == "image":
                 print(
                     f"  [{self.name}] Figure {u.figure_id:>6}  {u.status:4}  "
@@ -199,8 +205,14 @@ def run_vision_audit(
     do_ocr: bool = True,
     use_phics: bool = True,
     verbose: bool = True,
+    ocr_hints: Optional[List[str]] = None,
 ) -> FigureReport:
-    agent = VisionAgent(do_ocr=do_ocr, use_phics=use_phics, verbose=verbose)
+    agent = VisionAgent(
+        do_ocr=do_ocr,
+        use_phics=use_phics,
+        verbose=verbose,
+        ocr_hints=ocr_hints,
+    )
     if docx:
         return agent.audit_docx(Path(docx))
     if folder:
