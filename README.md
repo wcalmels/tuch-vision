@@ -10,6 +10,7 @@ A specific theory (e.g. TTH) is an optional **profile**, not the product.
 |-------|-----|
 | Vision | Figures + captions in any DOCX / folder |
 | Screens | UI captures for companion apps / sites |
+| TOC | Audit / Word field / static rebuild from Headings |
 | Health | Outline fill / approval / promises → local PhiCS |
 | Spectral (optional) | Integration of signal matrices (`phi_spectral`) |
 
@@ -31,6 +32,7 @@ cd my-book
 tuch-vision health --project .
 tuch-vision figures --folder ./figures --project .
 tuch-vision screens ./screenshots --project .
+tuch-vision toc --docx ./book.docx
 ```
 
 Theory-specific OCR soft priors (example only):
@@ -48,7 +50,12 @@ tuch-vision figures --docx book.docx [--project .]
 tuch-vision figures --folder ./figures --no-phics
 tuch-vision screens ./screenshots [--project .]
 tuch-vision health [--project .] [--outline ...]
+tuch-vision toc --docx book.docx                 # audit manual TOC vs Headings
+tuch-vision toc --docx book.docx --replace --output-docx book_toc.docx
+tuch-vision toc --docx book.docx --rebuild-static --output-docx book_toc.docx
 ```
+
+After `--replace`, open the file in Word and **Update Field** (`Ctrl+A`, `F9`) so page numbers appear.
 
 ## Profile (`manuscript.toml`)
 

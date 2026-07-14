@@ -1,4 +1,4 @@
-"""CLI: tuch-vision init|figures|screens|health"""
+"""CLI: tuch-vision init|figures|screens|health|toc"""
 
 from __future__ import annotations
 
@@ -183,6 +183,70 @@ def health(
     console.print(report.summary)
     console.print(f"[dim]Report: {out}[/dim]")
     if not report.phics_ok:
+        raise typer.Exit(1)
+
+
+@app.command()
+def toc(
+    docx: Path = typer.Option(..., "--docx", help="Manuscript DOCX"),
+    project: Path | None = typer.Option(None, "--project", "-p"),
+    replace: bool = typer.Option(
+        False,
+        "--replace",
+        help="Replace manual Contents list with a Word TOC field",
+    ),
+    rebuild_static: bool = typer.Option(
+        False,
+        "--rebuild-static",
+        help="Rebuild Contents as a static list from Heading styles",
+    ),
+    levels: int = typer.Option(2, "--levels", "-L", help="Max heading level (1–3)"),
+    output_docx: Path | None = typer.Option(
+        None,
+        "--output-docx",
+        help="Write path when using --replace / --rebuild-static",
+    ),
+    out: Path | None = typer.Option(None, "--out", "-o", help="Markdown report path"),
+) -> None:
+    """Audit or rewrite the table of contents from Heading styles."""
+    _ = _project_profile(project)  # load profile for consistent cwd project use
+    if replace and rebuild_static:
+        console.print("[red]Use only one of --replace or --rebuild-static[/red]")
+        raise typer.Exit(1)
+    if not docx.exists():
+        console.print(f"[red]Not found: {docx}[/red]")
+        raise typer.Exit(1)
+    if levels < 1 or levels > 3:
+        console.print("[red]--levels must be 1, 2, or 3[/red]")
+        raise typer.Exit(1)
+
+    from tuch_vision.toc import run_toc
+
+    action = "audit"
+    if replace:
+        action = "replace"
+    elif rebuild_static:
+        action = "rebuild-static"
+
+    report = run_toc(
+        docx,
+        action=action,
+        max_level=levels,
+        output_docx=output_docx,
+    )
+    md = report.to_markdown()
+    if out is None:
+        stamp = datetime.now().strftime("%Y%m%d_%H%M")
+        out = Path("output") / f"toc_audit_{stamp}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(md, encoding="utf-8")
+    console.print(report.summary)
+    console.print(f"[dim]Report: {out}[/dim]")
+    if action != "audit":
+        console.print(
+            "[dim]Open the DOCX in Word and Update Field (Ctrl+A, F9) for page numbers.[/dim]"
+        )
+    if not report.ok and action == "audit":
         raise typer.Exit(1)
 
 

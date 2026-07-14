@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tuch-vision"
-version = "0.2.0"
+version = "0.2.1"
 description = "Manuscript agents for any book: vision/OCR, PhiCS health, optional spectral Phi"
 readme = "README.md"
 requires-python = ">=3.11"

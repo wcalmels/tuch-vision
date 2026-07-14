@@ -37,7 +37,11 @@ You audit manuscript figures **and** UI screenshots: images, OCR text, quality, 
 ## Commands
 
 ```powershell
-py -3 main.py figures --docx path\to\book.docx
+tuch-vision figures --docx path\to\book.docx
+tuch-vision screens .\screenshots
+tuch-vision toc --docx path\to\book.docx
+tuch-vision toc --docx path\to\book.docx --replace --output-docx book_toc.docx
+```
 py -3 main.py screens
 py -3 main.py screens --folder screenshots\samples --recursive
 py -3 main.py ui-review --folder path\to\captures
